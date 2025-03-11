@@ -24,6 +24,46 @@ class TestHTMLNode(unittest.TestCase):
         with self.assertRaises(ValueError):
             node = LeafNode("a", None)
             node.to_html()
+    
 
+    class TestParentNode(unittest.TestCase):
+        def test_basic_parent_with_children(self):
+            child_node = LeafNode("b", "bold")
+            parent_node = ParentNode("div", [child_node])
+            self.assertEqual(parent_node.to_html(), "<div><b>bold</b></div>")
+    
+        def test_parent_without_tag_raises_error(self):
+            with self.assertRaises(ValueError) as context:
+                parent_node = ParentNode(None, [LeafNode("b", "bold")])
+                parent_node.to_html()
+            self.assertEqual(str(context.exception), "ParentNode is missing a tag.")
+    
+        def test_parent_without_children_raises_error(self):
+            with self.assertRaises(ValueError) as context:
+                parent_node = ParentNode("div", [])
+                parent_node.to_html()
+            self.assertEqual(str(context.exception), "ParentNode must have children.")
+      
+        def test_multiple_children(self):
+            children = [
+                LeafNode("i", "italic"),
+                LeafNode(None, "plain text"),
+            ]
+            parent_node = ParentNode("p", children)
+            self.assertEqual(parent_node.to_html(), "<p><i>italic</i>plain text</p>")
+    
+        def test_nested_parent_nodes(self):
+            grandchild = LeafNode("b", "grandchild")
+            child = ParentNode("span", [grandchild])
+            parent = ParentNode("div", [child])
+            self.assertEqual(parent.to_html(), "<div><span><b>grandchild</b></span></div>")
+    
+        def test_empty_grandchild_raises_error(self):
+            with self.assertRaises(ValueError) as context:
+                grandchild = ParentNode("span", [])
+                parent = ParentNode("div", [grandchild])
+                parent.to_html()
+            self.assertEqual(str(context.exception), "ParentNode must have children.")
+            
 if __name__ == "__main__":
     unittest.main()
