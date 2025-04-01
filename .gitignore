@@ -1,2 +1,4 @@
 __pycache__/
 
+tsconfig.json
+venv_static/

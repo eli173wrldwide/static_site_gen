@@ -1,3 +1,4 @@
+from textnode import TextType, TextNode
 
 
 class HTMLNode:
@@ -37,10 +38,24 @@ class ParentNode(HTMLNode):
 
     def to_html(self):
         if self.tag is None:
-            raise ValueError("ParentNode must have a tag")
-        if self.children is None:
-            raise ValueError("ParentNode must have child argument")
+            raise ValueError("ParentNode is missing a tag.")
+        if self.children is None or not self.children:
+            raise ValueError("ParentNode must have children.")
         else:
             leaf_nodes = "".join([leaf.to_html() for leaf in self.children]) 
             return f"<{self.tag}>{leaf_nodes}</{self.tag}>"
 
+def text_node_to_html_node(text_node):
+    mappings = {
+    TextType.TEXT: lambda node: LeafNode(None, node.text),
+    TextType.BOLD: lambda node: LeafNode("b", node.text),
+    TextType.ITALIC: lambda node: LeafNode("i", node.text),
+    TextType.CODE: lambda node: LeafNode("code", node.text),
+    TextType.LINK: lambda node: LeafNode("a", node.text, {"href": node.url}),
+    TextType.IMAGE: lambda node: LeafNode("img", "", {"src": node.url, "alt": node.text}),
+    }
+    
+    if text_node.text_type in mappings:
+        return mappings[text_node.text_type](text_node)
+    else:
+        raise Exception("Invalid TextType")
